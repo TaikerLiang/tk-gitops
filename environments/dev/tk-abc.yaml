@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tk-abc
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:TaikerLiang/TK-ABC.git
+    targetRevision: develop
+    path: helm/tk-abc
+    helm:
+      valueFiles:
+        - values-prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tk-abc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
