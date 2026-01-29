@@ -1,0 +1,79 @@
+# Default values for tk-abc
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Bot configuration
+bot:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: tk-abc
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+# Huey consumer configuration
+consumer:
+  enabled: true
+  replicaCount: 1
+  workers: 4
+  image:
+    repository: tk-abc-consumer
+    tag: "latest"
+    pullPolicy: IfNotPresent   
+
+# Environment variables (non-sensitive)
+env:
+  basePath: /app
+  djangoSettingsModule: console.settings.bot
+
+# Secrets (should be provided via --set or separate values file)
+secrets:
+  enabled: true
+  externalSecretName: tk-abc-secrets
+
+# Database configuration (connects to host machine's PostgreSQL via localhost)
+# Pods use hostNetwork: true to access host's localhost services
+database:
+  host: "host.docker.internal"
+  port: "5432"
+  name: "abc_dev"
+  user: "postgres"
+
+# Redis configuration (connects to host machine's Redis via localhost)
+redis:
+  host: "host.docker.internal"
+  port: "6379"
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  allowPrivilegeEscalation: false
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

@@ -1,0 +1,115 @@
+{{- if .Values.consumer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tk-abc.fullname" . }}-consumer
+  labels:
+    {{- include "tk-abc.labels" . | nindent 4 }}
+    app.kubernetes.io/component: consumer
+spec:
+  replicas: {{ .Values.consumer.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "tk-abc.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: consumer
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "tk-abc.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: consumer
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "tk-abc.serviceAccountName" . }}
+      hostNetwork: true  # Enable host networking to access localhost services
+      dnsPolicy: ClusterFirstWithHostNet
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: consumer
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.consumer.image.repository | default .Values.image.repository }}:{{ .Values.consumer.image.tag | default .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.consumer.image.pullPolicy | default .Values.image.pullPolicy }}
+        command: ["uv", "run", "huey_consumer.py", "apps.bot.tasks.huey", "-k", "process", "-w", "{{ .Values.consumer.workers }}"]
+        env:
+        - name: UV_CACHE_DIR
+          value: "/tmp/.cache/uv"
+        - name: BASE_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "tk-abc.fullname" . }}-config
+              key: base_path
+        - name: PYTHONPATH
+          value: "$(BASE_PATH)/apps/console:$(BASE_PATH)"
+        - name: DJANGO_SETTINGS_MODULE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "tk-abc.fullname" . }}-config
+              key: django_settings_module
+        - name: TELEGRAM_BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "tk-abc.fullname" . }}-secret
+              key: telegram_bot_token
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "tk-abc.fullname" . }}-secret
+              key: openai_api_key
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "tk-abc.fullname" . }}-config
+              key: db_host
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "tk-abc.fullname" . }}-config
+              key: db_port
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "tk-abc.fullname" . }}-config
+              key: db_name
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "tk-abc.fullname" . }}-config
+              key: db_user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "tk-abc.fullname" . }}-secret
+              key: db_password
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "tk-abc.fullname" . }}-config
+              key: redis_host
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "tk-abc.fullname" . }}-config
+              key: redis_port
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
