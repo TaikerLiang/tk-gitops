@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "tk-abc.fullname" . }}-config
+  labels:
+    {{- include "tk-abc.labels" . | nindent 4 }}
+data:
+  base_path: {{ .Values.env.basePath | quote }}
+  django_settings_module: {{ .Values.env.djangoSettingsModule | quote }}
+  db_host: {{ .Values.database.host | quote }}
+  db_port: {{ .Values.database.port | quote }}
+  db_name: {{ .Values.database.name | quote }}
+  db_user: {{ .Values.database.user | quote }}
+  redis_host: {{ .Values.redis.host | quote }}
+  redis_port: {{ .Values.redis.port | quote }}

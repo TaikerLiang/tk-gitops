@@ -1,0 +1,14 @@
+apiVersion: v2
+name: tk-abc
+description: A Helm chart for TK-ABC Telegram bot - English vocabulary learning assistant
+type: application
+version: 1.0.0
+appVersion: "1.1.0"
+keywords:
+  - telegram-bot
+  - education
+  - vocabulary
+  - english-learning
+maintainers:
+  - name: Paul Liang
+    email: liang0816tw@gmail.com
