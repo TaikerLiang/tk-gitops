@@ -1,0 +1,2 @@
+# Helm production values (contains secrets)
+values/
